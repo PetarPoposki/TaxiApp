@@ -1,6 +1,7 @@
 package com.example.taxiapp;
 
 import android.content.Context;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,9 +48,16 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.ViewHolder>{
     public void onBindViewHolder(ViewHolder viewHolder, int i) {
         Driver driver = myList.get(i);
         viewHolder.myName.setText(driver.getName());
+
+
+
         Glide.with(mContext)
+                //.load(driver.getImage().toString())
                 .load(driver.getImage())
+                .override(90, 150)
+                .fitCenter()
                 .into(viewHolder.Pic);
+
         //viewHolder.Pic.setImageURI(driver.getImage());
     }
     // Пресметка на големината на податочното множество (повикано од

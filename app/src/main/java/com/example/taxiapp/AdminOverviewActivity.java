@@ -50,6 +50,7 @@ public class AdminOverviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_admin_overview);
 
         values = new ArrayList<Driver>();
+        storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://taxiapp-70702.appspot.com/drivers/Petar/image.jpg");
         storageReference = FirebaseStorage.getInstance("gs://taxiapp-70702.appspot.com").getReference();
         lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
 
@@ -74,8 +75,9 @@ public class AdminOverviewActivity extends AppCompatActivity {
                 for(DataSnapshot snappy: snapshot.getChildren())
                 {
                     Driver driver = snappy.getValue(Driver.class);
-                    StorageReference stor = storageReference.child("drivers").child(driver.getName()).child("image.jpg");
-                    driver.setImage(stor);
+                    //StorageReference stor = storageReference.child("drivers").child(driver.getName()).child("image.jpg");
+                    String url = "https://firebasestorage.googleapis.com/v0/b/taxiapp-70702.appspot.com/o/drivers%2F" + driver.getName() +"%2Fimage?alt=media";
+                    driver.setImage(url);
                     values.add(driver);
                 }
                 mAdapter.notifyDataSetChanged();

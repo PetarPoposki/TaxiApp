@@ -92,12 +92,16 @@ public class AddDriverActivity extends AppCompatActivity {
                 }
                 else {
                     Driver driver = new Driver();
-                  //  driver.setImage(imageUri);
+                     // driver.setImage(imageUri);
                     driver.setName(driverName);
                     lastRef.child("drivers").child(driverName).setValue(driver);
-                    storageRef.child("drivers").child(driverName).child("image").putFile(imageUri);
-
-                    startActivity(new Intent(AddDriverActivity.this, AdminOverviewActivity.class));
+                    storageRef.child("drivers").child(driverName).child("image").putFile(imageUri)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    startActivity(new Intent(AddDriverActivity.this, AdminOverviewActivity.class));
+                                }
+                            });
                 }
             }
         });

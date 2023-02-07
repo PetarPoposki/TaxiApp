@@ -5,13 +5,16 @@
 
     <ImageView
         android:id="@+id/driver_image"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:layout_width="150dp"
+        android:layout_height="110dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
 
     <TextView
         android:id="@+id/driver_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
         android:textSize="20sp"
         android:textStyle="bold"
         android:padding="10dp" />

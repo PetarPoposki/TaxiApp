@@ -11,10 +11,10 @@ public class Driver {
     @PropertyName("Name")
     private String name;
     @PropertyName("Image")
-    private StorageReference image;
+    private String image;
 
 
-    public Driver(String name, StorageReference image) {
+    public Driver(String name, String image) {
         this.name = name;
         this.image = image;
     }
@@ -25,7 +25,7 @@ public class Driver {
     }
 
     @PropertyName("image")
-    public StorageReference getImage() {
+    public String getImage() {
         return image;
     }
 
@@ -35,7 +35,7 @@ public class Driver {
         this.name = name;
     }
 
-    public void setImage(StorageReference image) {
+    public void setImage(String image) {
         this.image = image;
     }
 
