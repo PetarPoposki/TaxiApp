@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,7 +40,7 @@ public class UserActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     RecyclerView mRecyclerView;
-    myAdapter mAdapter;
+    userAdapter mAdapter;
     List<Driver> values;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +80,7 @@ public class UserActivity extends AppCompatActivity {
 // и default animator (без анимации)
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 // сетирање на кориснички дефиниран адаптер myAdapter (посебна класа)
-        mAdapter = new myAdapter(values, R.layout.userview_row, this);
+        mAdapter = new userAdapter(values, R.layout.userview_row, this);
 //прикачување на адаптерот на RecyclerView
         mRecyclerView.setAdapter(mAdapter);
 
