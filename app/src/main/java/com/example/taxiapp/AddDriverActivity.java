@@ -18,9 +18,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.internal.NavigationMenuItemView;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -28,14 +32,19 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AddDriverActivity extends AppCompatActivity {
 
+    FirebaseAuth mAuth;
     private DatabaseReference lastRef;
     private StorageReference storageRef;
     private NavigationMenuItemView AddNav;
     private NavigationMenuItemView DeleteNav;
     private EditText driverNameEditText;
+    private EditText driverEmailEditText;
+    private EditText driverPasswordEditText;
     private ImageView driverImageView;
     private static final int PICK_IMAGE = 1;
     public DrawerLayout drawerLayout;
@@ -47,6 +56,7 @@ public class AddDriverActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_driver);
 
+        mAuth = FirebaseAuth.getInstance();
         lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
 
         storageRef = FirebaseStorage.getInstance("gs://taxiapp-70702.appspot.com").getReference();
@@ -67,6 +77,7 @@ public class AddDriverActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(false);
 
         driverNameEditText = findViewById(R.id.driver_name);
+        driverEmailEditText = findViewById(R.id.driver_email);
         driverImageView = findViewById(R.id.driver_image);
 
         Button uploadPictureButton = findViewById(R.id.upload_picture_button);
@@ -84,6 +95,7 @@ public class AddDriverActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String driverName = driverNameEditText.getText().toString();
+                String driverEmail = driverEmailEditText.getText().toString();
 
                 // save the data to Firebase Realtime Database
                 if(driverName.equals("") || imageUri == null)
@@ -95,6 +107,8 @@ public class AddDriverActivity extends AppCompatActivity {
                      // driver.setImage(imageUri);
                     driver.setName(driverName);
                     lastRef.child("drivers").child(driverName).setValue(driver);
+                    lastRef.child("driver emails").child(driverName).setValue(driverEmail);
+                    PerformAuth();
                     storageRef.child("drivers").child(driverName).child("image").putFile(imageUri)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
@@ -147,6 +161,66 @@ public class AddDriverActivity extends AppCompatActivity {
             imageUri = data.getData();
             driverImageView.setImageURI(imageUri);
         }
+    }
+
+    public static boolean isEmailValid(String email) {
+
+        String regExpn = "^(([\\w-]+\\.)+[\\w-]+|([a-zA-Z]{1}|[\\w-]{2,}))@"
+                + "((([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                + "[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\."
+                + "([0-1]?[0-9]{1,2}|25[0-5]|2[0-4][0-9])\\.([0-1]?"
+                + "[0-9]{1,2}|25[0-5]|2[0-4][0-9])){1}|"
+                + "([a-zA-Z]+[\\w-]+\\.)+[a-zA-Z]{2,4})$";
+        CharSequence inputStr = email;
+        Pattern pattern = Pattern.compile(regExpn, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(inputStr);
+        if (matcher.matches())
+            return true;
+        else
+            return false;
+    }
+    private void PerformAuth() {
+        driverEmailEditText = findViewById(R.id.driver_email);
+        driverPasswordEditText = findViewById(R.id.driver_password);
+        //confirmPasswordEditText = findViewById(R.id.confirm_password_edit_text);
+
+        String email = driverEmailEditText.getText().toString();
+        String password = driverPasswordEditText.getText().toString();
+        String confirmpassword = driverPasswordEditText.getText().toString();
+
+        if (!isEmailValid(email))
+        {
+            driverEmailEditText.setError("Enter correct email.");
+        }
+        else if (password.isEmpty() || password.length()<6)
+        {
+            driverPasswordEditText.setError("Enter correct password.");
+        }
+        else if (!password.equals(confirmpassword))
+        {
+            driverPasswordEditText.setError("Passwords do not match.");
+        }
+        else
+        {
+
+
+            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful())
+                    {
+
+                        Toast.makeText(AddDriverActivity.this, "Registration is successful.", Toast.LENGTH_SHORT).show();
+                    }
+                    else
+                    {
+                        Toast.makeText(AddDriverActivity.this, "" + task.getException() , Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+        }
+
     }
 
 

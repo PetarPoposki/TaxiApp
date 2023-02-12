@@ -54,7 +54,7 @@ public class myAdapter extends RecyclerView.Adapter<myAdapter.ViewHolder>{
         Glide.with(mContext)
                 //.load(driver.getImage().toString())
                 .load(driver.getImage())
-                .override(90, 150)
+                //.override(90, 150)
                 .fitCenter()
                 .into(viewHolder.Pic);
 

@@ -27,30 +27,42 @@ import com.google.android.material.internal.NavigationMenu;
 import com.google.android.material.internal.NavigationMenuItemView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
+    private DatabaseReference lastRef;
     private NavigationMenuItemView RegisterNav;
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
     private Button mLoginButton;
     private Button mRegisterButton;
+    private Integer flag;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     ProgressDialog progressDialog;
+    public ArrayList<String> values;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        flag = 0;
         progressDialog = new ProgressDialog(this);
         mAuth = FirebaseAuth.getInstance();
-
+        lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
+        values = new ArrayList<String>();
 
         // drawer layout instance to toggle the menu icon to open
         // drawer and back button to close drawer
@@ -176,17 +188,54 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendUserToNextActivity() {
         String email = mEmailEditText.getText().toString();
-        Intent intent;
+       // Intent intent;
         if (email.equals("admin@project.com"))
         {
-            intent = new Intent(MainActivity.this, AdminOverviewActivity.class);
+            startActivity(new Intent(MainActivity.this, AdminOverviewActivity.class));
         }
         else
         {
-            intent = new Intent(MainActivity.this, MainActivity.class);
+
+            lastRef.child("driver emails").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    String email = mEmailEditText.getText().toString();
+                    values.clear();
+                    flag = 0;
+                    for(DataSnapshot snappy: snapshot.getChildren())
+                    {
+                        values.add(snappy.getValue().toString());
+                        if(values.contains(email))
+                        {
+                            flag = 1;
+                            break;
+                        }
+                    }
+
+                    if(flag == 0) {
+                        Intent intent = new Intent(MainActivity.this, UserActivity.class);
+                        intent.putExtra("message", email);
+                        startActivity(intent);
+                    }
+                    else
+                    {
+                        Intent intent = new Intent(MainActivity.this, DriverActivity.class);
+                        intent.putExtra("message", email);
+                        startActivity(intent);
+                    }
+                }
+
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(MainActivity.this, "HELLO" + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+
+            });
+
         }
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
+        //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
+        //startActivity(intent);
     }
 
     public static boolean isEmailValid(String email) {
