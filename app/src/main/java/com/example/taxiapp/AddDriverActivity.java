@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.internal.NavigationMenuItemView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -42,6 +43,7 @@ public class AddDriverActivity extends AppCompatActivity {
     private StorageReference storageRef;
     private NavigationMenuItemView AddNav;
     private NavigationMenuItemView DeleteNav;
+    private NavigationMenuItemView LogoutNav;
     private EditText driverNameEditText;
     private EditText driverEmailEditText;
     private EditText driverPasswordEditText;
@@ -121,6 +123,29 @@ public class AddDriverActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String email = user.getEmail();
+            if (!email.equals("admin@project.com")) {
+                // User is not an admin, redirect to login or another activity
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // User is an admin, continue loading the activity
+            }
+        } else {
+            // User is not signed in, redirect to login or another activity
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
     // override the onOptionsItemSelected()
     // function to implement
     // the item click listener callback
@@ -140,6 +165,14 @@ public class AddDriverActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(AddDriverActivity.this, DeleteDriverActivity.class));
+            }
+        });
+        LogoutNav = findViewById(R.id.nav_logoutadmin);
+        LogoutNav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAuth.signOut();
+                startActivity(new Intent(AddDriverActivity.this, MainActivity.class));
             }
         });
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {

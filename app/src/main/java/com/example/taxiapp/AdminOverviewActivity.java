@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.google.android.material.internal.NavigationMenuItemView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,6 +39,7 @@ public class AdminOverviewActivity extends AppCompatActivity {
     private StorageReference storageReference;
     private NavigationMenuItemView AddNav;
     private NavigationMenuItemView DeleteNav;
+    private NavigationMenuItemView LogoutNav;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     public Button AddDriver;
@@ -53,6 +56,7 @@ public class AdminOverviewActivity extends AppCompatActivity {
         storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://taxiapp-70702.appspot.com/drivers/Petar/image.jpg");
         storageReference = FirebaseStorage.getInstance("gs://taxiapp-70702.appspot.com").getReference();
         lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
+        mAuth = FirebaseAuth.getInstance();
 
         //сетирање на RecyclerView контејнерот
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
@@ -139,6 +143,14 @@ public class AdminOverviewActivity extends AppCompatActivity {
                 startActivity(new Intent(AdminOverviewActivity.this, DeleteDriverActivity.class));
             }
         });
+        LogoutNav = findViewById(R.id.nav_logoutadmin);
+        LogoutNav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAuth.signOut();
+                startActivity(new Intent(AdminOverviewActivity.this, MainActivity.class));
+            }
+        });
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -149,6 +161,29 @@ public class AdminOverviewActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return false;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String email = user.getEmail();
+            if (!email.equals("admin@project.com")) {
+                // User is not an admin, redirect to login or another activity
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // User is an admin, continue loading the activity
+            }
+        } else {
+            // User is not signed in, redirect to login or another activity
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
 }

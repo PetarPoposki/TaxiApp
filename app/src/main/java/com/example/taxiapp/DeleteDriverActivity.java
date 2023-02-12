@@ -17,6 +17,8 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.internal.NavigationMenuItemView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,10 +28,12 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 public class DeleteDriverActivity extends AppCompatActivity {
+    FirebaseAuth mAuth;
     private DatabaseReference lastRef;
     private StorageReference storageRef;
     private NavigationMenuItemView AddNav;
     private NavigationMenuItemView OverviewNav;
+    private NavigationMenuItemView LogoutNav;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private Button DeleteButton;
@@ -42,7 +46,7 @@ public class DeleteDriverActivity extends AppCompatActivity {
         setContentView(R.layout.activity_delete_driver);
 
         lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
-
+        mAuth = FirebaseAuth.getInstance();
         storageRef = FirebaseStorage.getInstance("gs://taxiapp-70702.appspot.com").getReference();
 
 
@@ -96,6 +100,29 @@ public class DeleteDriverActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String email = user.getEmail();
+            if (!email.equals("admin@project.com")) {
+                // User is not an admin, redirect to login or another activity
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                // User is an admin, continue loading the activity
+            }
+        } else {
+            // User is not signed in, redirect to login or another activity
+            Intent intent = new Intent(this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         AddNav = findViewById(R.id.nav_add);
         AddNav.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +136,14 @@ public class DeleteDriverActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(DeleteDriverActivity.this, AdminOverviewActivity.class));
+            }
+        });
+        LogoutNav = findViewById(R.id.nav_logoutadmin);
+        LogoutNav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAuth.signOut();
+                startActivity(new Intent(DeleteDriverActivity.this, MainActivity.class));
             }
         });
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
