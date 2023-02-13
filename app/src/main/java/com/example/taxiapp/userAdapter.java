@@ -24,13 +24,13 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
         public TextView myName;
         public ImageView Pic;
         private ImageButton Check;
-        private  ImageButton Cross;
+       // private  ImageButton Cross;
         public ViewHolder(View itemView) {
             super(itemView);
             myName = (TextView) itemView.findViewById(R.id.driver_name);
             Pic = (ImageView) itemView.findViewById(R.id.driver_image);
             Check = (ImageButton) itemView.findViewById(R.id.positive_icon);
-            Cross = (ImageButton) itemView.findViewById(R.id.negative_icon);
+            //Cross = (ImageButton) itemView.findViewById(R.id.negative_icon);
         }
     }
 
@@ -60,12 +60,12 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
                 Toast.makeText(mContext, "CHECK " + myList.get(position).getName(), Toast.LENGTH_SHORT).show();
             }
         });
-        viewHolder.Cross.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(mContext, "CROSS " + myList.get(position).getName(), Toast.LENGTH_SHORT).show();
-            }
-        });
+     //   viewHolder.Cross.setOnClickListener(new View.OnClickListener() {
+          //  @Override
+           // public void onClick(View view) {
+             //   Toast.makeText(mContext, "CROSS " + myList.get(position).getName(), Toast.LENGTH_SHORT).show();
+           // }
+      //  });
 
 
 

@@ -169,15 +169,7 @@ public class AdminOverviewActivity extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            String email = user.getEmail();
-            if (!email.equals("admin@project.com")) {
-                // User is not an admin, redirect to login or another activity
-                Intent intent = new Intent(this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            } else {
-                // User is an admin, continue loading the activity
-            }
+
         } else {
             // User is not signed in, redirect to login or another activity
             Intent intent = new Intent(this, MainActivity.class);

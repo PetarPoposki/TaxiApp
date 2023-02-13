@@ -108,6 +108,7 @@ public class AddDriverActivity extends AppCompatActivity {
                     Driver driver = new Driver();
                      // driver.setImage(imageUri);
                     driver.setName(driverName);
+                    driver.setBusy(0);
                     lastRef.child("drivers").child(driverName).setValue(driver);
                     lastRef.child("driver emails").child(driverName).setValue(driverEmail);
                     PerformAuth();

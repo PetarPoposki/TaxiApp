@@ -3,13 +3,22 @@ package com.example.taxiapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,10 +51,43 @@ public class UserActivity extends AppCompatActivity {
     RecyclerView mRecyclerView;
     userAdapter mAdapter;
     List<Driver> values;
+    public static final int REQUEST_LOCATION_PERMISSION = 1;
+    long MIN_TIME_INTERVAL = 1000; // 1 second
+    float MIN_DISTANCE = 100; // 100 meters
+    LocationManager locationManager;
+    Location location = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
+        LocationListener locationListener = new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                // Handle the updated location
+                double latitude = location.getLatitude();
+                double longitude = location.getLongitude();
+            }
+        };
+
+        locationManager = (LocationManager)
+                UserActivity.this.getSystemService(Context.LOCATION_SERVICE);
+        // Check if the app has permission to access the device's location
+        if (ActivityCompat.checkSelfPermission((Activity) UserActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission((Activity) UserActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // If the app doesn't have permission, request permission
+            ActivityCompat.requestPermissions((Activity) UserActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+        } else {
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                // If the location provider is not enabled, prompt the user to enable it
+                Intent enableLocationIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(enableLocationIntent);
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_INTERVAL, MIN_DISTANCE, locationListener);
+            location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+
+
+
         mAuth = FirebaseAuth.getInstance();
         values = new ArrayList<Driver>();
         storageReference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://taxiapp-70702.appspot.com/drivers/Petar/image.jpg");
@@ -70,6 +112,9 @@ public class UserActivity extends AppCompatActivity {
         userEmail = findViewById(R.id.user_email);
         userEmail.setText("The user's email is: " + email);
 
+        String name = email.split("@")[0];
+        lastRef.child("locations").child(name).setValue(location);
+
         //сетирање на RecyclerView контејнерот
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
 // оваа карактеристика може да се користи ако се знае дека промените
@@ -80,29 +125,35 @@ public class UserActivity extends AppCompatActivity {
 // и default animator (без анимации)
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
 // сетирање на кориснички дефиниран адаптер myAdapter (посебна класа)
-        mAdapter = new userAdapter(values, R.layout.userview_row, this);
+
 //прикачување на адаптерот на RecyclerView
-        mRecyclerView.setAdapter(mAdapter);
+
 
         lastRef.child("drivers").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                values.clear();
                 for(DataSnapshot snappy: snapshot.getChildren())
                 {
                     Driver driver = snappy.getValue(Driver.class);
                     //StorageReference stor = storageReference.child("drivers").child(driver.getName()).child("image.jpg");
                     String url = "https://firebasestorage.googleapis.com/v0/b/taxiapp-70702.appspot.com/o/drivers%2F" + driver.getName() +"%2Fimage?alt=media";
                     driver.setImage(url);
-                    values.add(driver);
+                    if(driver.getBusy()==0) {
+                        values.add(driver);
+                    }
                 }
-                mAdapter.notifyDataSetChanged();
+                mAdapter = new userAdapter(values, R.layout.userview_row, UserActivity.this);
+                mRecyclerView.setAdapter(mAdapter);
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(UserActivity.this, "HELLO" + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
 
         });
+
 
         // to make the Navigation drawer icon always appear on the action bar
         getSupportActionBar().setDisplayShowHomeEnabled(false);
