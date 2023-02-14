@@ -3,6 +3,11 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:gravity="center_horizontal">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/black"
+        android:layout_marginBottom="3dp"/>
 
     <TextView
         android:id="@+id/driver_name"
