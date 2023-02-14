@@ -106,9 +106,10 @@ public class UserActivity extends AppCompatActivity {
         actionBarDrawerToggle.syncState();
 
 
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String email = user.getEmail();
 
-        Intent intent = getIntent();
-        String email = intent.getStringExtra("message");
+
         userEmail = findViewById(R.id.user_email);
         userEmail.setText("The user's email is: " + email);
 

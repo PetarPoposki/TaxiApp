@@ -5,6 +5,7 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -13,8 +14,14 @@ import android.widget.Toast;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
+import java.util.Locale;
+
 public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
     private List<Driver> myList;
     private int rowLayout;
@@ -23,13 +30,16 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView myName;
         public ImageView Pic;
-        private ImageButton Check;
+        private Button Choose;
+
        // private  ImageButton Cross;
         public ViewHolder(View itemView) {
             super(itemView);
             myName = (TextView) itemView.findViewById(R.id.driver_name);
             Pic = (ImageView) itemView.findViewById(R.id.driver_image);
-            Check = (ImageButton) itemView.findViewById(R.id.positive_icon);
+            Choose = (Button) itemView.findViewById(R.id.choose_button);
+
+
             //Cross = (ImageButton) itemView.findViewById(R.id.negative_icon);
         }
     }
@@ -54,10 +64,18 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
         Driver driver = myList.get(i);
         Integer position = i;
         viewHolder.myName.setText(driver.getName());
-        viewHolder.Check.setOnClickListener(new View.OnClickListener() {
+        viewHolder.Choose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(mContext, "CHECK " + myList.get(position).getName(), Toast.LENGTH_SHORT).show();
+                DatabaseReference lastRef;
+                lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                String email = user.getEmail();
+                String drivermail = myList.get(position).getName().toLowerCase() + "@project.com";
+                Request baranje = new Request(email, drivermail);
+                lastRef.child("requests").child(myList.get(position).getName()).setValue(baranje);
+                lastRef.child("drivers").child(myList.get(position).getName()).child("busy").setValue(1);
+                Toast.makeText(mContext, "Chosen " + myList.get(position).getName() + ". Wait for reply.", Toast.LENGTH_LONG).show();
             }
         });
      //   viewHolder.Cross.setOnClickListener(new View.OnClickListener() {
