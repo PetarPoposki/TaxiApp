@@ -73,8 +73,8 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
                 String email = user.getEmail();
                 String drivermail = myList.get(position).getName().toLowerCase() + "@project.com";
                 Request baranje = new Request(email, drivermail);
-                lastRef.child("requests").child(myList.get(position).getName()).setValue(baranje);
-                lastRef.child("drivers").child(myList.get(position).getName()).child("busy").setValue(1);
+                lastRef.child("requests").child(myList.get(position).getName()).child(email.split("@")[0]).setValue(baranje);
+              //  lastRef.child("drivers").child(myList.get(position).getName()).child("busy").setValue(1);
                 Toast.makeText(mContext, "Chosen " + myList.get(position).getName() + ". Wait for reply.", Toast.LENGTH_LONG).show();
             }
         });
