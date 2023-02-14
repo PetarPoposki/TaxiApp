@@ -78,13 +78,6 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
                 Toast.makeText(mContext, "Chosen " + myList.get(position).getName() + ". Wait for reply.", Toast.LENGTH_LONG).show();
             }
         });
-     //   viewHolder.Cross.setOnClickListener(new View.OnClickListener() {
-          //  @Override
-           // public void onClick(View view) {
-             //   Toast.makeText(mContext, "CROSS " + myList.get(position).getName(), Toast.LENGTH_SHORT).show();
-           // }
-      //  });
-
 
 
         Glide.with(mContext)

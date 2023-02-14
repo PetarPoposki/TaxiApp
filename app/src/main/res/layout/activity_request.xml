@@ -25,6 +25,18 @@
             android:layout_height="wrap_content"
             android:text="" />
 
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/map_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Accept" />
+
 
 
     </LinearLayout>
@@ -34,6 +46,6 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/driver_menu" />
+        app:menu="@menu/request_menu" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

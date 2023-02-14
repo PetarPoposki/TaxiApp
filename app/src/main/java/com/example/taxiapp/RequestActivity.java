@@ -12,24 +12,38 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.internal.NavigationMenuItemView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class RequestActivity extends AppCompatActivity {
+public class RequestActivity extends AppCompatActivity implements OnMapReadyCallback {
     private TextView selected;
     private NavigationMenuItemView LogoutNav;
+    private NavigationMenuItemView RequestsNav;
     public DrawerLayout drawerLayout;
     public ActionBarDrawerToggle actionBarDrawerToggle;
     private FirebaseAuth mAuth;
     DatabaseReference lastRef;
+    private GoogleMap mMap;
+    private MapView mMapView;
+    private static final LatLng SYDNEY_OPERA_HOUSE = new LatLng(-33.8567844, 151.213108);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_request);
+
+        mMapView = findViewById(R.id.map_view);
+        mMapView.onCreate(savedInstanceState);
+        mMapView.getMapAsync(this);
 
         Intent intent = getIntent();
         String email = intent.getStringExtra("message");
@@ -48,15 +62,23 @@ public class RequestActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(false);
     }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        LogoutNav = findViewById(R.id.nav_logoutdriver);
+        LogoutNav = findViewById(R.id.nav_logoutdriverreq);
         LogoutNav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 mAuth.signOut();
                 startActivity(new Intent(RequestActivity.this, MainActivity.class));
+            }
+        });
+        RequestsNav = findViewById(R.id.nav_requests);
+        RequestsNav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(RequestActivity.this, DriverActivity.class));
             }
         });
         if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
@@ -65,6 +87,7 @@ public class RequestActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         return false;
@@ -85,5 +108,30 @@ public class RequestActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mMapView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        LatLng posledna = new LatLng(41.998925, 21.403635);
+        mMap.addMarker(new MarkerOptions().position(posledna).title("EVE SU!"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(posledna));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(posledna, 15f)); // 15f is the zoom level
     }
 }
