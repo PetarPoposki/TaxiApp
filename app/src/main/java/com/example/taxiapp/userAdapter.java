@@ -1,6 +1,9 @@
 package com.example.taxiapp;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +14,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.List;
 import java.util.Locale;
@@ -71,11 +78,24 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
                 lastRef = FirebaseDatabase.getInstance("https://taxiapp-70702-default-rtdb.europe-west1.firebasedatabase.app/").getReference();
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 String email = user.getEmail();
+                String topic = email.split("@")[0];
                 String drivermail = myList.get(position).getName().toLowerCase() + "@project.com";
                 Request baranje = new Request(email, drivermail);
                 lastRef.child("requests").child(myList.get(position).getName()).child(email.split("@")[0]).setValue(baranje);
               //  lastRef.child("drivers").child(myList.get(position).getName()).child("busy").setValue(1);
                 Toast.makeText(mContext, "Chosen " + myList.get(position).getName() + ". Wait for reply.", Toast.LENGTH_LONG).show();
+                FirebaseMessaging.getInstance().subscribeToTopic(topic)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                String msg = "Subscribed";
+                                if (!task.isSuccessful()) {
+                                    msg = "Subscribe failed";
+                                }
+                                Log.d(TAG, msg);
+                                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
         });
 

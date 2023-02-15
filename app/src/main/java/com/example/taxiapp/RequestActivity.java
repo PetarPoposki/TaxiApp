@@ -1,5 +1,7 @@
 package com.example.taxiapp;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,8 +17,10 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,9 +45,18 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 public class RequestActivity extends AppCompatActivity implements OnMapReadyCallback {
     private TextView selected;
@@ -65,6 +78,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
     float MIN_DISTANCE = 100; // 100 meters
     LocationManager locationManager;
     Location location = null;
+    String notifemail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +124,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         String name = user.getEmail().split("@")[0];
         capitalized = name.substring(0, 1).toUpperCase() + name.substring(1);
         username = email.split("@")[0];
+        notifemail = email;
 
 
         Accept = findViewById(R.id.accept_button);
@@ -119,6 +134,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                 Intent intent = new Intent(RequestActivity.this, FinishedActivity.class);
                 intent.putExtra("message", username);
                 lastRef.child("drivers").child(capitalized).child("busy").setValue(1);
+                sendNotification(notifemail);
                 startActivity(intent);
             }
         });
@@ -128,6 +144,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
             public void onClick(View view) {
                 lastRef.child("requests").child(capitalized).child(username).removeValue();
                 startActivity(new Intent(RequestActivity.this, DriverActivity.class));
+                sendNotification(notifemail);
             }
         });
 
@@ -239,4 +256,68 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         });
 
     }
+    private void sendNotification(String email) {
+        // Create a new message
+        JSONObject message = new JSONObject();
+        try {
+            String topic = "/topics/" + email.split("@")[0];
+            message.put("to", topic);
+            message.put("data", new JSONObject().put("message","Hello " + email + ". Your request has been accepted."));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // Send the message using the FCM API
+        new SendMessageTask().execute(message);
+    }
+
+
+
+
+
+    private class SendMessageTask extends AsyncTask<JSONObject, Void, String> {
+        @Override
+        protected String doInBackground(JSONObject... params) {
+            try {
+                // Send the message to the server
+                URL url = new URL("https://fcm.googleapis.com/fcm/send");
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setRequestProperty("Authorization", "key=AAAAg8jkbJw:APA91bFsfE2qkEuRMvXC8CshRKs2gelohOSLSHXBvWrZCGowsCLFOGUM1yvvevf3vT4fPmPGi2-KZEIHe0CLnx8tCAzmiRNFDeOvgmHvc4yAeV-9SGo4VqYuay_Yh77l61mhwmELn7x3");
+                connection.setDoOutput(true);
+
+                // Write the message to the request body
+                OutputStream outputStream = connection.getOutputStream();
+                outputStream.write(params[0].toString().getBytes());
+                outputStream.flush();
+                outputStream.close();
+
+                // Read the response from the server
+                InputStream inputStream = connection.getInputStream();
+                String response = convertStreamToString(inputStream);
+                inputStream.close();
+
+                return response;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String response) {
+            // Handle the response from the server
+            Log.d(TAG, "Response: " + response);
+        }
+    }
+
+    private String convertStreamToString(InputStream inputStream) {
+        // This method reads the response from the server and converts it to a string
+        // You can customize this method to handle the response in any way you want
+        Scanner scanner = new Scanner(inputStream).useDelimiter("\\A");
+        return scanner.hasNext() ? scanner.next() : "";
+    }
+
 }
