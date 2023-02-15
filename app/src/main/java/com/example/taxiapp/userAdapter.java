@@ -93,7 +93,7 @@ public class userAdapter extends RecyclerView.Adapter<userAdapter.ViewHolder>{
                                     msg = "Subscribe failed";
                                 }
                                 Log.d(TAG, msg);
-                                Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show();
                             }
                         });
             }

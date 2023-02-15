@@ -134,6 +134,30 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                 Intent intent = new Intent(RequestActivity.this, FinishedActivity.class);
                 intent.putExtra("message", username);
                 lastRef.child("drivers").child(capitalized).child("busy").setValue(1);
+
+                lastRef.child("requests").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for(DataSnapshot snappy: snapshot.getChildren())
+                        {
+                            for(DataSnapshot snoopy: snappy.getChildren())
+                            {
+                                if(snoopy.getKey().equals(username) && !snappy.getKey().equals(capitalized))
+                                {
+                                    lastRef.child("requests").child(snappy.getKey()).child(snoopy.getKey()).removeValue();
+                                }
+                            }
+                        }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(RequestActivity.this, "HELLO" + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                });
+
                 sendNotification(notifemail);
                 startActivity(intent);
             }
@@ -144,7 +168,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
             public void onClick(View view) {
                 lastRef.child("requests").child(capitalized).child(username).removeValue();
                 startActivity(new Intent(RequestActivity.this, DriverActivity.class));
-                sendNotification(notifemail);
+               // sendNotification(notifemail);
             }
         });
 

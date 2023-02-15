@@ -18,6 +18,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
+
 public class FinishedActivity extends AppCompatActivity {
     private Button Finished;
     private NavigationMenuItemView LogoutNav;
@@ -54,8 +59,19 @@ public class FinishedActivity extends AppCompatActivity {
         Finished.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Calendar calendar = Calendar.getInstance();
+                Date currentTime = calendar.getTime();
+                History history = new History();
+                history.setDriver(capitalized);
+                history.setUser(username);
+                history.setTime(currentTime);
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
+// Convert the Date object to a formatted string using the SimpleDateFormat object
+                String formattedDate = dateFormat.format(currentTime);
                 lastRef.child("drivers").child(capitalized).child("busy").setValue(0);
                 lastRef.child("requests").child(capitalized).child(username).removeValue();
+                lastRef.child("history").child(formattedDate).setValue(history);
                 startActivity(new Intent(FinishedActivity.this, DriverActivity.class));
             }
         });
